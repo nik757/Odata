@@ -2,6 +2,7 @@
 	class ODataDate
 		{
 		private $date;
+		const immutable = true;
 
 		public function __construct($date=null)
 			{

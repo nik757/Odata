@@ -7,11 +7,11 @@
 	class OData
 		{
 		private static $entities;
-	
+
 		private function __construct()
 			{
 			}
-	
+
 		public static function __request(string $url, $data = [], $HTTPMethod='GET')
 			{
 			if(!$HTTPMethod || !in_array($HTTPMethod,['GET','POST','PUT','DELETE','PATCH']))
@@ -35,7 +35,7 @@
 			$json = @json_decode($response,true);
 			if(Console::isKey('s') || $httpCode == 400)
 				{
-				#echo'<pre>';print_r($data);echo'</pre>';
+				echo'<pre>';print_r($data);echo'</pre>';
 				Console::Write(curl_getinfo($curl, CURLINFO_HEADER_OUT));
 				Console::Write(json_encode($data,JSON_PRETTY_PRINT));
 				}
@@ -58,7 +58,7 @@
 				}
 			return is_array($json) ? $json : $httpCode;
 			}
-	
+
 		public static function getURL()
 			{
 			return SHERP_API;
@@ -87,7 +87,7 @@
 				}
 			return self::$entities;
 			}
-	
+
 		public static function __callStatic($method, $arguments = []): ODataSet
 			{
 			if(self::getEntities() && !in_array($method, self::$entities))
@@ -96,7 +96,7 @@
 				}
 			return new ODataSet($method,$arguments);
 			}
-	
+
 		# prepare properties for Create/Update
 		private static function recPrepareDate($data)
 			{
@@ -106,12 +106,12 @@
 				}
 			return $data;
 			}
-	
+
 		private static function processValue($val)
 			{
 			return is_object($val) ? $val->getReference() : $val;
 			}
-	
+
 		public static function Create(string $entity,array $data) : ODataObject
 			{
 			if (!in_array($entity,self::getEntities()))
@@ -128,14 +128,14 @@
 				}
 			return self::$entity([$classname::pk=>$response[$classname::pk]])->shift();
 			}
-	
+
 		public static function Update(ODataObject $object,array $data) : bool
 			{
 			$url = self::getURL().'/'.$object->getObjectLink();
 			$data = self::recPrepareDate($data);
 			return self::__request($url, $data, 'PATCH') == 204;
 			}
-	
+
 		public static function Delete(ODataObject $object) : bool
 			{
 			return false;

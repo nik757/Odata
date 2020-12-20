@@ -92,10 +92,11 @@
 				}
 			foreach($this->filter as $prop => $val)
 				{
+				$immutable = is_object($val) && defined(get_class($val).'::immutable') && get_class($val)::immutable;
 				$val = is_object($val) && method_exists($val,'getReference') ? $val->getReference() : $val;
 				$val = is_object($val) && in_array(get_class($val),['ODataSet','ODataCollection']) ? $this->extractPKs($val) : $val;
 				$this->changeLogic($prop,$val);
-				$method = strtolower(gettype($val)).'Type';
+				$method = strtolower($immutable ? 'immutable' : gettype($val)).'Type';
 				if(!method_exists($this, $method))
 					{
 					throw new Exception('Filter type not supported: '.$method);
@@ -216,6 +217,11 @@
 			return $this->template([$prop,$val,$option],is_string($val) && !(new GuidValidator)->Check($val) ? "$1 $3 '$2'" : "$1 $3 $2");
 			}
 		
+		private function immutableType(string $prop, $val, string $option) : string
+			{
+			return $this->template([$prop,$val,$option], "$1 $3 $2");
+			}
+
 		private function nullType(string $prop,$val, string $option) : string
 			{
 			return $this->template([$prop,$option],'$1 $2 null');

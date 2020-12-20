@@ -213,10 +213,6 @@
 				}
 			if(array_key_exists($pk,$this->data) && $this->data[$pk])
 				{
-				if(array_key_exists($k_active,$this->data) && $this->newdata[$k_active] == $this->data[$k_active])
-					{
-					unset($this->newdata[$k_active]);
-					}
 				if(count($this->newdata))
 					{
 					$this->newdata =
@@ -237,6 +233,10 @@
 					($k_cd ? [$k_cd => date('Y-m-d\TH:i:s\Z')] : []) +
 					($k_active ? [$k_active =>	intval(array_key_exists($k_active,$this->data) ? $this->data[$k_active] : false)] : []) +
 					$this->newdata + [$classname::pk => $classname::genPrimaryKey()];
+				if($classname == 'RequestHistory')
+					{
+					unset($this->newdata['IdRequestHistory']);
+					}
 				if($object = OData::Create($this->entity, $this->newdata))
 					{
 					$this->data = $object->getProps();
@@ -331,13 +331,15 @@
 
 		private static function nextPK() : int
 			{
+			$pk = 1;
 			$classname = get_called_class();
 			$entity = self::class2entity($classname);
 			$response = OData::__request(OData::getURL().(new ODataQuery([[],[$classname::pk],$entity,1,[$classname::pk =>'desc']])));
 			if(is_array($response) && array_key_exists('value',$response) && is_array($response['value']) && isset($response['value'][0]) && array_key_exists($classname::pk,$response['value'][0]))
 				{
-				return intval($response['value'][0][$classname::pk]) + 1;
+				$pk = intval($response['value'][0][$classname::pk]) + 1;
 				}
+			return $pk ? $pk: 1;
 			}
 
 		public function getReference()
